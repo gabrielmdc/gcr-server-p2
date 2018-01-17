@@ -8,8 +8,9 @@ import threading
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/lib")
 from connection import Connection
 from receiver import ReceiverThread
-from repository.repositories import Repositories
 from supervisor import SupervisorThread
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/lib/repository")
+from repositories import Repositories
 
 
 class Main(object):
