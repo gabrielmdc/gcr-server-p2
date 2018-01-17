@@ -2,7 +2,7 @@
 Repositories module
 """
 import sqlite3
-from .gpio import GpioRepository
+from gpio import GpioRepository
 
 
 class Repositories(object):

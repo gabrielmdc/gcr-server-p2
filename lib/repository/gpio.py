@@ -1,7 +1,10 @@
 """
 GpioRepository module
 """
-from lib.models.gpio import Gpio
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../models")
+from gpio import Gpio
 
 
 class GpioRepository(object):

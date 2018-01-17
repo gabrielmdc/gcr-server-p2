@@ -3,8 +3,8 @@ Connection module
 """
 import socket
 import threading
-from .receiver import ReceiverThread
-from .sender import SenderThread
+from receiver import ReceiverThread
+from sender import SenderThread
 
 
 class Connection(threading.Thread):
