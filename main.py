@@ -2,15 +2,12 @@
 Main program
 """
 import os
-import sys
 import socket
 import threading
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/lib")
-from connection import Connection
-from receiver import ReceiverThread
-from supervisor import SupervisorThread
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/lib/repository")
-from repositories import Repositories
+from lib.connection import Connection
+from lib.receiver import ReceiverThread
+from lib.supervisor import SupervisorThread
+from lib.repository.repositories import Repositories
 
 
 class Main(object):

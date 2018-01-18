@@ -12,10 +12,7 @@ DELETE:id_gpio
 """
 import threading
 from sender import SenderThread
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/models")
-from gpio import Gpio
+from models.gpio import Gpio
 
 
 class ReceiverThread(threading.Thread):
