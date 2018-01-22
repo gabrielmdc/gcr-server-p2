@@ -14,6 +14,7 @@ class SupervisorThread(threading.Thread):
         threading.Thread.__init__(self)
         self.__event = event
         self.__gpios = gpios
+        self.__nonStop = True
 
     def __get_changed_ports(self):
         """
@@ -27,16 +28,20 @@ class SupervisorThread(threading.Thread):
         return changed_gpios
 
     def run(self):
-        while True:
+        while self.__nonStop:
             try:
                 ports_to_send = self.__get_changed_ports()
                 if len(ports_to_send) > 0:
+                    print('GPIOs changed detected')
                     msg = SenderThread.get_gpios_json(ports_to_send)
+                    print('MSG to return: ' + msg)
                     SenderThread.msg = msg
                     self.__event.set()
                     self.__event.clear()
             except Exception as e:
                 print(e)
-                self.__event.set()
-                self.__event.clear()
                 break
+        print('Supervisor finished')
+
+    def stop(self):
+        self.__nonStop = False

@@ -18,7 +18,7 @@ class Gpio(object):
         self.__name = name
         self.__port = port
         self.__status = Gpio.STATUS_UNKNOWN
-        self.__has_changed = True
+        self.__has_changed = False
 
     def changes_send(self):
         """
@@ -29,7 +29,7 @@ class Gpio(object):
         self.__has_changed = False
 
     def has_changed(self):
-        self.__check_status()
+        self.refresh_status()
         return self.__has_changed
 
     def set_name(self, name):
@@ -44,9 +44,7 @@ class Gpio(object):
 
     def set_status(self, status):
         if self.__status != status:
-            self.__status = status
-            self.__write_status()
-            self.__has_changed = True
+            self.__write_status(status)
 
     def get_id(self):
         return self.__id
@@ -64,6 +62,17 @@ class Gpio(object):
     def get_file_name(parent_dir_name, port):
         return os.path.join(parent_dir_name, "gpio" + str(port), 'value')
 
+    def refresh_status(self):
+        """
+        Refresh the status and set '__has_changed' = True, if the status has changed from the file
+        """
+        status_from_file = self.__read_status()
+        if status_from_file != '' and self.__status != status_from_file:
+            prev_status = self.__status
+            self.__status = status_from_file
+            self.__has_changed = True
+            print('status has been changed')
+
     def __read_status(self):
         """
         Return status from the file and set the new status
@@ -71,23 +80,23 @@ class Gpio(object):
         with open(self.file_name) as f:
             return f.read(1)
 
-    def __write_status(self):
+    def __write_status(self, status):
         """
         Write the status in the file
         """
         with open(self.file_name, "w") as f:
-            f.write(self.__status)
+            f.write(status)
 
-    def __check_status(self):
-        if self.__status_has_changed():
-            self.__has_changed = True
-
-    def __status_has_changed(self):
-        """
-        Return True if the status has changed from the file, otherwise return False
-        """
-        status_from_file = self.__read_status()
-        if status_from_file != '' and self.__status != status_from_file:
-            self.__status = status_from_file
-            return True
-        return False
+    # def __check_status(self):
+    #     if self.__status_has_changed():
+    #         self.__has_changed = True
+    #
+    # def __status_has_changed(self):
+    #     """
+    #     Return True if the status has changed from the file, otherwise return False
+    #     """
+    #     status_from_file = self.__read_status()
+    #     if status_from_file != '' and self.__status != status_from_file:
+    #         self.__status = status_from_file
+    #         return True
+    #     return False

@@ -58,13 +58,13 @@ class GpioRepository(object):
             return gpio
         return None
 
-    def delete_gpio(self, gpio):
+    def delete_gpio_by_id(self, gpio_id):
         cursor = self.con.cursor()
-        cursor.execute("DELETE from GPIO WHERE ID=" + str(gpio.get_id()) + "")
+        cursor.execute("DELETE from GPIO WHERE ID=" + str(gpio_id) + "")
         self.con.commit()
 
-    def update_gpio(self, gpio):
+    def update_gpio(self, gpio_id, name, port):
         cursor = self.con.cursor()
-        cursor.execute("UPDATE GPIO set NAME='" + gpio.get_name() + "',\
-         PORT=" + str(gpio.get_port()) + " WHERE ID=" + str(gpio.get_id()) + "")
+        cursor.execute("UPDATE GPIO set NAME='" + name + "',\
+         PORT=" + str(port) + " WHERE ID=" + str(gpio_id) + "")
         self.con.commit()

@@ -20,4 +20,5 @@ class Repositories(object):
         """
         if self.__con and not self.__gpio_repository:
             self.__gpio_repository = GpioRepository(self.__con)
+            self.__gpio_repository.create_table()
         return self.__gpio_repository

@@ -2,17 +2,19 @@
 Receiver module
 Protocol:
 ------------------
-END
-STATUS:id_gpio,...:'ON' | 'OFF'
-GET:ALL | id_gpio
-EDIT:id_gpio:name:port
-ADD:name:port
-DELETE:id_gpio
+:END
+:STATUS:id_gpio,...:'ON' | 'OFF'
+:GET:ALL | id_gpio
+:EDIT:id_gpio:name:port
+:ADD:name:port
+:DELETE:id_gpio
 ------------------
 """
 import threading
+import os
 from sender import SenderThread
 from models.gpio import Gpio
+from repository.repositories import Repositories
 
 
 class ReceiverThread(threading.Thread):
@@ -21,75 +23,143 @@ class ReceiverThread(threading.Thread):
     """
     gpios = []
 
-    def __init__(self, connection, repositories):
+    def __init__(self, connection, db_file, sender):
         threading.Thread.__init__(self)
         self.__connection = connection
-        self.__repositories = repositories
+        self.__db_file = db_file
+        self.__sender = sender
 
     def run(self):
         while True:
             # Receive the data in small chunks and retransmit it
-            msg = self.__connection.recv(100)
+            msg = self.__connection.recv(32)
+            msg = msg.decode('utf')
+            msg = msg.strip()
             # Protocol: MSG:INFO|ON|OFF
             action_data = ReceiverThread.get_action_data(msg)
+            print('data received: ' + msg)
             if not action_data:
-                continue
+                print('...no action_data received...')
+                break
             action = action_data[0]
             data = action_data[1]
+            print('ACTION: ' + action)
 
             if action == 'END' or not data:
-                self.__connection.close()
                 break
 
             if action == 'STATUS':
-                if data[1] == 'ON':
-                    status = Gpio.STATUS_ON
-                elif data[1] == 'OFF':
-                    status = Gpio.STATUS_OFF
-                else:
+                if not self._status_action(data):
                     continue
-                # Get gpios
-                gpios = ReceiverThread.get_gpios_from_data(data[0])
-                # modify the status of all gpios
-                for gpio in gpios:
-                    gpio.set_status(status)
 
             elif action == 'GET':
-                if not data:
+                if not self._get_action(data):
                     continue
-                if data[0] == 'ALL':
-                    msg_to_send = SenderThread.get_gpios_json(ReceiverThread.gpios)
-                    self.__connection.sendall(msg_to_send.encode())
-                else:
-                    gpio = ReceiverThread.get_gpio_by_id(data[0])
-                    msg_to_send = SenderThread.get_gpios_json([gpio])
-                    self.__connection.sendall(msg_to_send.encode())
 
-            elif action == 'EDIT' and len(data) > 2:
-                gpio = ReceiverThread.get_gpio_by_id(data[0])
-                if not gpio:
+            elif action == 'EDIT':
+                if not self._edit_action(data):
                     continue
-                gpio.set_name(data[1])
-                gpio.set_port(data[2])
-                gpio_repo = self.__repositories.get_gpio_repository()
-                gpio_repo.update_gpio(gpio)
 
-            elif action == 'ADD' and len(data) > 1:
-                gpio_repo = self.__repositories.get_gpio_repository()
-                new_gpio = gpio_repo.create_gpio(data[0], data[1])
-                new_gpio.set_status(Gpio.STATUS_OFF)
-                ReceiverThread.gpios.append(new_gpio)
-            elif action == 'DELETE' and len(data) > 0:
-                gpio = ReceiverThread.get_gpio_by_id(data[0])
-                if not gpio:
+            elif action == 'ADD':
+                if not self._add_action(data):
                     continue
-                gpio_repo = self.__repositories.get_gpio_repository()
-                gpio_repo.delete_gpio(gpio)
+
+            elif action == 'DELETE':
+                if not self._delete_action(data):
+                    continue
+        self._end()
+
+    def _status_action(self, data):
+        print('data[1]: ' + data[1])
+        if data[1] == 'ON':
+            status = Gpio.STATUS_ON
+        elif data[1] == 'OFF':
+            status = Gpio.STATUS_OFF
+        else:
+            return False
+        # Get gpios
+        gpios = ReceiverThread.get_gpios_from_data(data[0])
+        # modify the status of all gpios
+        for gpio in gpios:
+            print('set status of gpio' + str(gpio.get_port()) + ' to ' + status)
+            gpio.set_status(status)
+        return True
+
+    def _get_action(self, data):
+        if not data:
+            return False
+        if data[0] == 'ALL':
+            msg_to_send = SenderThread.get_gpios_json(ReceiverThread.gpios)
+            self.__connection.sendall(msg_to_send.encode())
+        else:
+            gpio = ReceiverThread.get_gpio_by_id(data[0])
+            msg_to_send = SenderThread.get_gpios_json([gpio])
+            self.__connection.sendall(msg_to_send.encode())
+        return True
+
+    def _add_action(self, data):
+        if len(data) < 2:
+            return False
+        try:
+            repositories = Repositories(self.__db_file)
+            gpio_repo = repositories.get_gpio_repository()
+            new_gpio = gpio_repo.create_gpio(data[0], data[1])
+            new_gpio.set_status(Gpio.STATUS_OFF)
+            ReceiverThread.prepare_gpios([new_gpio])
+            ReceiverThread.gpios.append(new_gpio)
+        except Exception:
+            print(Exception.message)
+            return False
+        return True
+
+    def _edit_action(self, data):
+        if len(data) < 3:
+            return False
+        gpio = ReceiverThread.get_gpio_by_id(data[0])
+        name = data[1]
+        port = data[2]
+        if not gpio:
+            return False
+        try:
+            repositories = Repositories(self.__db_file)
+            gpio_repo = repositories.get_gpio_repository()
+            gpio_repo.update_gpio(gpio.get_id(), name, port)
+            gpio.set_name(name)
+            gpio.set_port(port)
+        except Exception:
+            print(Exception.message)
+            return False
+        return True
+
+    def _delete_action(self, data):
+        if len(data) < 1:
+            return False
+        gpio = ReceiverThread.get_gpio_by_id(data[0])
+        if not gpio:
+            return False
+        try:
+            repositories = Repositories(self.__db_file)
+            gpio_repo = repositories.get_gpio_repository()
+            gpio_repo.delete_gpio(gpio.get_id())
+            ReceiverThread.gpios.remove(gpio)
+            msg_to_send = SenderThread.get_gpios_json([gpio])
+            msg_to_send = 'DELETED:' + msg_to_send
+            self.__connection.sendall(msg_to_send.encode())
+        except Exception:
+            print(Exception.message)
+            return False
+        return True
+
+    def _end(self):
+        self.__connection.close()
+        self.__sender.close_connection()
+        print('Receiver disconnected')
 
     @staticmethod
     def get_gpio_by_id(gpio_id):
         for gpio in ReceiverThread.gpios:
-            if gpio.id == gpio_id:
+            str_id = str(gpio.get_id())
+            if str_id == gpio_id:
                 return gpio
         return None
 
@@ -106,15 +176,30 @@ class ReceiverThread(threading.Thread):
     def get_gpios_from_id_list(id_list):
         gpios = []
         for gpio in ReceiverThread.gpios:
-            if gpio.id in id_list:
+            str_id = str(gpio.get_id())
+            if str_id in id_list:
                 gpios.append(gpio)
         return gpios
 
     @staticmethod
     def get_action_data(msg):
         data_action = msg.split(':')
-        if len(data_action) > 0:
-            action = data_action[0]
-            data = data_action[1:]
+        if len(data_action) > 1:
+            action = data_action[1].strip()
+            data = data_action[2:]
             return action, data
         return None
+
+    @staticmethod
+    def prepare_gpios(gpios):
+        """
+        Prepare the gpio port to be used
+        """
+        for gpio in gpios:
+            service_path = os.path.dirname(os.path.realpath(__file__))
+            script_path = os.path.join(service_path, 'gpio_setup.sh')
+            try:
+                os.system("sh " + script_path + " " + str(gpio.get_port()))
+            except Exception:
+                print('On GPIO: ' + str(gpio.get_port()))
+                print(Exception.message)

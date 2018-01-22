@@ -8,20 +8,27 @@ SOCKET_PORT = 10001
 DB_FILE = "lib/resources/database.db"
 
 
-def main():
+def main(m):
     """
     Main program
     """
-    m = Main(SOCKET_PORT, DB_FILE)
-    while True:
+    i = 5
+    while i > 0:
+        i -= 1
         try:
             m.listen_new_connection()
         except TypeError:
             print('exception?')
             break
-    m.close_socket_connection()
 
 
 if __name__ == '__main__':
-    main()
+    m = Main(SOCKET_PORT, DB_FILE)
+    try:
+        main(m)
+    except (KeyboardInterrupt, SystemExit):
+        print('Bye!')
+    finally:
+        m.close_socket_connection()
+        sys.exit(1)
 sys.exit(1)

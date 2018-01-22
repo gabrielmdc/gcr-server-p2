@@ -11,18 +11,19 @@ class Connection(threading.Thread):
     """
     Connection class
     """
-    def __init__(self, connection, address_port, event, repositories):
+    def __init__(self, connection, address_port, event, db_file):
         threading.Thread.__init__(self)
         self.__connection = connection
         self.__address_port = address_port
         self.__event = event
-        self.__repositories = repositories
+        self.__db_file = db_file
 
     def run(self):
-        receiver = ReceiverThread(self.__connection, self.__repositories)
         sender_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sender_socket.connect(self.__address_port)
-        sender = SenderThread(self.__event, sender_socket)
-
+        gpios = ReceiverThread.gpios
+        init_message = SenderThread.get_gpios_json(gpios)
+        sender = SenderThread(self.__event, sender_socket, init_message)
+        receiver = ReceiverThread(self.__connection, self.__db_file, sender)
         receiver.start()
         sender.start()
