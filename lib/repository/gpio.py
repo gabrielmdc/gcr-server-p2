@@ -16,9 +16,10 @@ class GpioRepository(object):
     def create_table(self):
         cursor = self.con.cursor()
         cursor.execute('''CREATE TABLE if not exists GPIO(
-            ID   INTEGER  PRIMARY KEY AUTOINCREMENT,
-            NAME TEXT             NOT NULL,
-            PORT INT              UNIQUE
+            ID       INTEGER  PRIMARY KEY AUTOINCREMENT,
+            NAME     TEXT             NOT NULL,
+            PORT     INT              UNIQUE,
+            INVERTED INT              DEFAULT 0
         )''')
         self.con.commit()
 
@@ -31,14 +32,15 @@ class GpioRepository(object):
         cursor.execute("SELECT * from GPIO")
         gpios = []
         for t in cursor:
-            gpio = Gpio(t[0], t[1], t[2], GpioRepository.GPIO_DIRECTORY_NAME)
+            gpio = Gpio(t[0], t[1], t[2], t[3] != 0, GpioRepository.GPIO_DIRECTORY_NAME)
             gpios.append(gpio)
         return gpios
 
-    def create_gpio(self, name, port):
+    def create_gpio(self, name, port, inverted):
+        is_inverted = '1' if inverted else '0'
         cursor = self.con.cursor()
-        cursor.execute("INSERT INTO GPIO (NAME, PORT)\
-          VALUES ('" + name + "', " + str(port) + ")")
+        cursor.execute("INSERT INTO GPIO (NAME, PORT, INVERTED)\
+          VALUES ('" + name + "', " + str(port) + ", " + is_inverted + ")")
         self.con.commit()
         return self.get_gpio_by_port(port)
 
@@ -54,7 +56,7 @@ class GpioRepository(object):
         cursor.execute("SELECT * from GPIO WHERE PORT=" + str(port) + "")
         t = cursor.fetchone()
         if t:
-            gpio = Gpio(t[0], t[1], t[2], GpioRepository.GPIO_DIRECTORY_NAME)
+            gpio = Gpio(t[0], t[1], t[2], t[3] != 0, GpioRepository.GPIO_DIRECTORY_NAME)
             return gpio
         return None
 
@@ -63,8 +65,9 @@ class GpioRepository(object):
         cursor.execute("DELETE from GPIO WHERE ID=" + str(gpio_id) + "")
         self.con.commit()
 
-    def update_gpio(self, gpio_id, name, port):
+    def update_gpio(self, gpio_id, name, port, inverted):
+        is_inverted = '1' if inverted else '0'
         cursor = self.con.cursor()
         cursor.execute("UPDATE GPIO set NAME='" + name + "',\
-         PORT=" + str(port) + " WHERE ID=" + str(gpio_id) + "")
+         PORT=" + str(port) + ", INVERTED=" + is_inverted + " WHERE ID=" + str(gpio_id) + "")
         self.con.commit()

@@ -5,7 +5,7 @@ Protocol:
 :END
 :STATUS:id_gpio,...:'ON' | 'OFF'
 :GET:ALL | id_gpio
-:EDIT:id_gpio:name:port
+:EDIT:id_gpio:name:port:inverted
 :ADD:name:port
 :DELETE:id_gpio
 ------------------
@@ -98,12 +98,12 @@ class ReceiverThread(threading.Thread):
         return True
 
     def _add_action(self, data):
-        if len(data) < 2:
+        if len(data) < 3:
             return False
         try:
             repositories = Repositories(self.__db_file)
             gpio_repo = repositories.get_gpio_repository()
-            new_gpio = gpio_repo.create_gpio(data[0], data[1])
+            new_gpio = gpio_repo.create_gpio(data[0], data[1], data[2] != '0')
             new_gpio.set_status(Gpio.STATUS_OFF)
             ReceiverThread.prepare_gpios([new_gpio])
             ReceiverThread.gpios.append(new_gpio)
@@ -113,11 +113,12 @@ class ReceiverThread(threading.Thread):
         return True
 
     def _edit_action(self, data):
-        if len(data) < 3:
+        if len(data) < 4:
             return False
         gpio = ReceiverThread.get_gpio_by_id(data[0])
         name = data[1]
         port = data[2]
+        inverted = data[3]
         if not gpio:
             return False
         try:
@@ -126,6 +127,7 @@ class ReceiverThread(threading.Thread):
             gpio_repo.update_gpio(gpio.get_id(), name, port)
             gpio.set_name(name)
             gpio.set_port(port)
+            gpio.set_inverted(inverted)
         except Exception:
             print(Exception.message)
             return False

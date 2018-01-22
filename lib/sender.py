@@ -59,6 +59,7 @@ class SenderThread(threading.Thread):
                 'id': gpio.get_id(),
                 'name': gpio.get_name(),
                 'port': gpio.get_port(),
+                'inverted': 'true' if gpio.is_inverted() else 'false',
                 'status': gpio.get_status(),
                 'deleted': 'true' if deleted else 'false'
             }

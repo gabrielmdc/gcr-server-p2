@@ -12,13 +12,14 @@ class Gpio(object):
     STATUS_OFF = '0'
     STATUS_UNKNOWN = ''
 
-    def __init__(self, gpio_id, name, port, gpio_directory_name):
+    def __init__(self, gpio_id, name, port, inverted, gpio_directory_name):
         self.file_name = Gpio.get_file_name(gpio_directory_name, port)
         self.__id = gpio_id
         self.__name = name
         self.__port = port
         self.__status = Gpio.STATUS_UNKNOWN
         self.__has_changed = False
+        self.__inverted = inverted
 
     def changes_send(self):
         """
@@ -46,6 +47,11 @@ class Gpio(object):
         if self.__status != status:
             self.__write_status(status)
 
+    def set_inverted(self, inverted):
+        if self.__inverted != inverted:
+            self.__inverted = inverted
+            self.__has_changed = True
+
     def get_id(self):
         return self.__id
 
@@ -57,6 +63,9 @@ class Gpio(object):
 
     def get_status(self):
         return self.__status
+
+    def is_inverted(self):
+        return self.__inverted
 
     @staticmethod
     def get_file_name(parent_dir_name, port):
@@ -78,12 +87,19 @@ class Gpio(object):
         Return status from the file and set the new status
         """
         with open(self.file_name) as f:
-            return f.read(1)
+            status = f.read(1)
+            if self.__inverted:
+                status = Gpio.STATUS_ON if status == Gpio.STATUS_OFF else Gpio.STATUS_OFF
+            return status
 
     def __write_status(self, status):
         """
         Write the status in the file
         """
+        if status != Gpio.STATUS_OFF and status != Gpio.STATUS_ON:
+            return
+        if self.__inverted:
+            status = Gpio.STATUS_ON if status == Gpio.STATUS_OFF else Gpio.STATUS_ON
         with open(self.file_name, "w") as f:
             f.write(status)
 
