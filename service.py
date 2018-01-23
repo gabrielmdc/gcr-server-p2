@@ -5,21 +5,15 @@ import sys
 from main import Main
 
 SOCKET_PORT = 10001
-DB_FILE = "lib/resources/database.db"
+DB_FILE = "resources/database.db"
 
 
 def main(m):
     """
     Main program
     """
-    i = 5
-    while i > 0:
-        i -= 1
-        try:
-            m.listen_new_connection()
-        except TypeError:
-            print('exception?')
-            break
+    while True:
+        m.listen_new_connection()
 
 
 if __name__ == '__main__':
