@@ -33,7 +33,6 @@ class ReceiverThread(threading.Thread):
             msg = self.__connection.recv(32)
             msg = msg.decode('utf')
             msg = msg.strip()
-            # Protocol: MSG:INFO|ON|OFF
             action_data = ReceiverThread.get_action_data(msg)
             print('data received: ' + msg)
             if not action_data:
@@ -63,6 +62,77 @@ class ReceiverThread(threading.Thread):
                     continue
         self._end()
 
+    @staticmethod
+    def get_gpio_by_id(gpio_id):
+        """
+        Get a Gpio by id
+        :param gpio_id: integer
+        :return: Gpio | None
+        """
+        for gpio in SupervisorThread.gpios:
+            str_id = str(gpio.get_id())
+            if str_id == gpio_id:
+                return gpio
+        return None
+
+    @staticmethod
+    def get_gpios_from_data(data):
+        """
+        Get gpios from the data received
+        :param data: string
+        :return: Gpio[]
+        """
+        if data:
+            gpios_id = data.split(',')
+            id_list = list(filter(None, gpios_id))
+            gpios = ReceiverThread.get_gpios_from_id_list(id_list)
+            return gpios
+        return []
+
+    @staticmethod
+    def get_gpios_from_id_list(id_list):
+        """
+        Return Gpio[] from a list of Gpio id
+        :param id_list: string[]
+        :return: Gpio[]
+        """
+        gpios = []
+        for gpio in SupervisorThread.gpios:
+            str_id = str(gpio.get_id())
+            if str_id in id_list:
+                gpios.append(gpio)
+        return gpios
+
+    @staticmethod
+    def get_action_data(msg):
+        """
+        Extract the action from the data received
+        :param msg: string
+        :return: string
+        """
+        data_action = msg.split(':')
+        if len(data_action) > 1:
+            action = data_action[1].strip()
+            data = data_action[2:]
+            return action, data
+        return None
+
+    @staticmethod
+    def prepare_gpios(gpios):
+        """
+        Prepare the gpio port to be used
+        :param gpios: Gpio[]
+        :return: void
+        """
+        for gpio in gpios:
+            service_path = os.path.dirname(os.path.realpath(__file__))
+            script_path = os.path.join(service_path, 'gpio_setup.sh')
+            try:
+                os.system("sh " + script_path + " " + str(gpio.get_port()))
+            except Exception as e:
+                print('On GPIO: ' + str(gpio.get_port()))
+                print(e)
+
     def _status_action(self, data):
         print('data[1]: ' + data[1])
         if data[1] == 'ON':
@@ -89,8 +159,8 @@ class ReceiverThread(threading.Thread):
             new_gpio.set_status(Gpio.STATUS_OFF)
             ReceiverThread.prepare_gpios([new_gpio])
             SupervisorThread.gpios.append(new_gpio)
-        except Exception:
-            print(Exception.message)
+        except Exception as e:
+            print(e)
             return False
         return True
 
@@ -110,8 +180,8 @@ class ReceiverThread(threading.Thread):
             gpio.set_name(name)
             gpio.set_port(port)
             gpio.set_inverted(inverted)
-        except Exception:
-            print(Exception.message)
+        except Exception as e:
+            print(e)
             return False
         return True
 
@@ -125,10 +195,9 @@ class ReceiverThread(threading.Thread):
             repositories = Repositories(self.__db_file)
             gpio_repo = repositories.get_gpio_repository()
             gpio_repo.delete_gpio_by_id(gpio.get_id())
-            SupervisorThread.gpios.remove(gpio)
-            SupervisorThread.deleted_gpios.append(gpio)
-        except Exception:
-            print(Exception.message)
+            gpio.to_delete = True
+        except Exception as e:
+            print(e)
             return False
         return True
 
@@ -136,52 +205,3 @@ class ReceiverThread(threading.Thread):
         self.__connection.close()
         self.__sender.close_connection()
         print('Receiver disconnected')
-
-    @staticmethod
-    def get_gpio_by_id(gpio_id):
-        for gpio in SupervisorThread.gpios:
-            str_id = str(gpio.get_id())
-            if str_id == gpio_id:
-                return gpio
-        return None
-
-    @staticmethod
-    def get_gpios_from_data(data):
-        if data:
-            gpios_id = data.split(',')
-            id_list = list(filter(None, gpios_id))
-            gpios = ReceiverThread.get_gpios_from_id_list(id_list)
-            return gpios
-        return []
-
-    @staticmethod
-    def get_gpios_from_id_list(id_list):
-        gpios = []
-        for gpio in SupervisorThread.gpios:
-            str_id = str(gpio.get_id())
-            if str_id in id_list:
-                gpios.append(gpio)
-        return gpios
-
-    @staticmethod
-    def get_action_data(msg):
-        data_action = msg.split(':')
-        if len(data_action) > 1:
-            action = data_action[1].strip()
-            data = data_action[2:]
-            return action, data
-        return None
-
-    @staticmethod
-    def prepare_gpios(gpios):
-        """
-        Prepare the gpio port to be used
-        """
-        for gpio in gpios:
-            service_path = os.path.dirname(os.path.realpath(__file__))
-            script_path = os.path.join(service_path, 'gpio_setup.sh')
-            try:
-                os.system("sh " + script_path + " " + str(gpio.get_port()))
-            except Exception:
-                print('On GPIO: ' + str(gpio.get_port()))
-                print(Exception.message)

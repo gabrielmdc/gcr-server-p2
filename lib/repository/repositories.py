@@ -9,14 +9,19 @@ class Repositories(object):
     """
     Repositories class
     """
+
     def __init__(self, db_file):
+        """
+        Constructor
+        :param db_file: string
+        """
         self.__con = sqlite3.connect(db_file)
         self.__gpio_repository = None
 
     def get_gpio_repository(self):
         """
         Get gpio repository
-        :return:
+        :return: GpioRepository
         """
         if self.__con and not self.__gpio_repository:
             self.__gpio_repository = GpioRepository(self.__con)

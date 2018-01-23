@@ -5,7 +5,6 @@ import os
 import socket
 import threading
 from lib.connection import Connection
-from lib.receiver import ReceiverThread
 from lib.supervisor import SupervisorThread
 from lib.repository.repositories import Repositories
 
@@ -14,6 +13,7 @@ class Main(object):
     """
     Main class
     """
+
     def __init__(self, socket_port, db_file):
         self.__socket_port = socket_port
         self.__event = threading.Event()
@@ -26,12 +26,14 @@ class Main(object):
         gpio_repository = repositories.get_gpio_repository()
         gpios = gpio_repository.get_all_gpio()
         SupervisorThread.gpios = gpios
-        # self.__supervisor = SupervisorThread(gpios, self.__event)
         Main.prepare_gpios(gpios)
-        # self.__supervisor.start()
 
     def listen_new_connection(self):
-        # Wait for a connection
+        """
+        Listen for new connections
+        and create the supervisor in case that is not already created
+        :return: void
+        """
         conn, client_address = self.__socket.accept()
         connection = Connection(conn, (client_address[0], self.__socket_port), self.__event, self.__db_file)
         connection.start()
@@ -41,19 +43,14 @@ class Main(object):
             self.__supervisor.start()
 
     def close_socket_connection(self):
+        """
+        Close the socket connection
+        and stop the supervisor
+        :return: void
+        """
         print('Closing connections and threads...')
         self.__socket.close()
         self.__supervisor.stop()
-
-    def __prepare_socket(self):
-        if not self.__socket:
-            # Create a TCP/IP socket
-            self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # Bind the socket to the port
-        server_address = ('', self.__socket_port)
-        self.__socket.bind(server_address)
-        # Listen for incoming connections
-        self.__socket.listen(1)
 
     @staticmethod
     def prepare_gpios(gpios):
@@ -68,3 +65,17 @@ class Main(object):
             except Exception:
                 print('On GPIO: ' + str(gpio.get_port()))
                 print(Exception.message)
+
+    def __prepare_socket(self):
+        """
+        Prepare the socket for listening
+        :return: void
+        """
+        if not self.__socket:
+            # Create a TCP/IP socket
+            self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Bind the socket to the port
+        server_address = ('', self.__socket_port)
+        self.__socket.bind(server_address)
+        # Listen for incoming connections
+        self.__socket.listen(1)

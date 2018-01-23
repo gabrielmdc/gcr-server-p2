@@ -11,7 +11,6 @@ class SupervisorThread(threading.Thread):
     This supervises any changes for all the gpios and send them in case of changes
     """
     gpios = []
-    deleted_gpios = []
 
     def __init__(self, event):
         threading.Thread.__init__(self)
@@ -22,9 +21,14 @@ class SupervisorThread(threading.Thread):
     def get_changed_ports():
         """
         Get a list of ports whose port status has changed
+        :return: Gpio[]
         """
         changed_gpios = []
         for gpio in SupervisorThread.gpios:
+            if gpio.to_delete:
+                SupervisorThread.gpios.remove(gpio)
+                changed_gpios.append(gpio)
+                continue
             if gpio.has_changed():
                 changed_gpios.append(gpio)
                 gpio.changes_send()
@@ -36,8 +40,7 @@ class SupervisorThread(threading.Thread):
                 ports_to_send = SupervisorThread.get_changed_ports()
                 if len(ports_to_send) > 0:
                     print('GPIOs changed detected')
-                    deleted_gpios = SupervisorThread.deleted_gpios
-                    msg = SenderThread.get_gpios_json(ports_to_send, deleted_gpios)
+                    msg = SenderThread.get_gpios_json(ports_to_send)
                     print('MSG to return: ' + msg)
                     SenderThread.msg = msg
                     SupervisorThread.deleted_gpios = []
@@ -49,4 +52,8 @@ class SupervisorThread(threading.Thread):
         print('Supervisor finished')
 
     def stop(self):
+        """
+        Set a field to indicate that the thread must be stopped
+        :return: void
+        """
         self.__nonStop = False

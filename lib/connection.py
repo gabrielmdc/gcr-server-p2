@@ -12,7 +12,15 @@ class Connection(threading.Thread):
     """
     Connection class
     """
+
     def __init__(self, connection, address_port, event, db_file):
+        """
+        Constructor
+        :param connection: socket connection
+        :param address_port: integer
+        :param event: Threading.Event
+        :param db_file: string
+        """
         threading.Thread.__init__(self)
         self.__connection = connection
         self.__address_port = address_port
