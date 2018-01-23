@@ -25,7 +25,7 @@ class Main(object):
         repositories = Repositories(self.__db_file)
         gpio_repository = repositories.get_gpio_repository()
         gpios = gpio_repository.get_all_gpio()
-        ReceiverThread.gpios = gpios
+        SupervisorThread.gpios = gpios
         # self.__supervisor = SupervisorThread(gpios, self.__event)
         Main.prepare_gpios(gpios)
         # self.__supervisor.start()
@@ -37,8 +37,7 @@ class Main(object):
         connection.start()
 
         if not self.__supervisor:
-            gpios = ReceiverThread.gpios
-            self.__supervisor = SupervisorThread(gpios, self.__event)
+            self.__supervisor = SupervisorThread(self.__event)
             self.__supervisor.start()
 
     def close_socket_connection(self):

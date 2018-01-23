@@ -5,6 +5,7 @@ import socket
 import threading
 from receiver import ReceiverThread
 from sender import SenderThread
+from supervisor import SupervisorThread
 
 
 class Connection(threading.Thread):
@@ -21,7 +22,7 @@ class Connection(threading.Thread):
     def run(self):
         sender_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sender_socket.connect(self.__address_port)
-        gpios = ReceiverThread.gpios
+        gpios = SupervisorThread.gpios
         init_message = SenderThread.get_gpios_json(gpios)
         sender = SenderThread(self.__event, sender_socket, init_message)
         receiver = ReceiverThread(self.__connection, self.__db_file, sender)

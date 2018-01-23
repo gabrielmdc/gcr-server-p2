@@ -11,7 +11,7 @@ Protocol:
 """
 import threading
 import os
-from sender import SenderThread
+from supervisor import SupervisorThread
 from models.gpio import Gpio
 from repository.repositories import Repositories
 
@@ -20,8 +20,6 @@ class ReceiverThread(threading.Thread):
     """
     ReceiverThread class
     """
-    gpios = []
-    deleted_gpios = []
 
     def __init__(self, connection, db_file, sender):
         threading.Thread.__init__(self)
@@ -90,7 +88,7 @@ class ReceiverThread(threading.Thread):
             new_gpio = gpio_repo.create_gpio(data[0], data[1], data[2] != '0')
             new_gpio.set_status(Gpio.STATUS_OFF)
             ReceiverThread.prepare_gpios([new_gpio])
-            ReceiverThread.gpios.append(new_gpio)
+            SupervisorThread.gpios.append(new_gpio)
         except Exception:
             print(Exception.message)
             return False
@@ -127,8 +125,8 @@ class ReceiverThread(threading.Thread):
             repositories = Repositories(self.__db_file)
             gpio_repo = repositories.get_gpio_repository()
             gpio_repo.delete_gpio_by_id(gpio.get_id())
-            ReceiverThread.gpios.remove(gpio)
-            ReceiverThread.deleted_gpios.append(gpio)
+            SupervisorThread.gpios.remove(gpio)
+            SupervisorThread.deleted_gpios.append(gpio)
         except Exception:
             print(Exception.message)
             return False
@@ -141,7 +139,7 @@ class ReceiverThread(threading.Thread):
 
     @staticmethod
     def get_gpio_by_id(gpio_id):
-        for gpio in ReceiverThread.gpios:
+        for gpio in SupervisorThread.gpios:
             str_id = str(gpio.get_id())
             if str_id == gpio_id:
                 return gpio
@@ -159,7 +157,7 @@ class ReceiverThread(threading.Thread):
     @staticmethod
     def get_gpios_from_id_list(id_list):
         gpios = []
-        for gpio in ReceiverThread.gpios:
+        for gpio in SupervisorThread.gpios:
             str_id = str(gpio.get_id())
             if str_id in id_list:
                 gpios.append(gpio)
