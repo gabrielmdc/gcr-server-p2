@@ -4,7 +4,6 @@ Protocol:
 ------------------
 :END
 :STATUS:id_gpio,...:'ON' | 'OFF'
-:GET:ALL | id_gpio
 :EDIT:id_gpio:name:port:inverted
 :ADD:name:port
 :DELETE:id_gpio
@@ -22,6 +21,7 @@ class ReceiverThread(threading.Thread):
     ReceiverThread class
     """
     gpios = []
+    deleted_gpios = []
 
     def __init__(self, connection, db_file, sender):
         threading.Thread.__init__(self)
@@ -52,10 +52,6 @@ class ReceiverThread(threading.Thread):
                 if not self._status_action(data):
                     continue
 
-            elif action == 'GET':
-                if not self._get_action(data):
-                    continue
-
             elif action == 'EDIT':
                 if not self._edit_action(data):
                     continue
@@ -83,18 +79,6 @@ class ReceiverThread(threading.Thread):
         for gpio in gpios:
             print('set status of gpio' + str(gpio.get_port()) + ' to ' + status)
             gpio.set_status(status)
-        return True
-
-    def _get_action(self, data):
-        if not data:
-            return False
-        if data[0] == 'ALL':
-            msg_to_send = SenderThread.get_gpios_json(ReceiverThread.gpios)
-            self.__connection.sendall(msg_to_send.encode())
-        else:
-            gpio = ReceiverThread.get_gpio_by_id(data[0])
-            msg_to_send = SenderThread.get_gpios_json([gpio])
-            self.__connection.sendall(msg_to_send.encode())
         return True
 
     def _add_action(self, data):
@@ -142,11 +126,9 @@ class ReceiverThread(threading.Thread):
         try:
             repositories = Repositories(self.__db_file)
             gpio_repo = repositories.get_gpio_repository()
-            gpio_repo.delete_gpio(gpio.get_id())
+            gpio_repo.delete_gpio_by_id(gpio.get_id())
             ReceiverThread.gpios.remove(gpio)
-            msg_to_send = SenderThread.get_gpios_json([gpio])
-            msg_to_send = 'DELETED:' + msg_to_send
-            self.__connection.sendall(msg_to_send.encode())
+            ReceiverThread.deleted_gpios.append(gpio)
         except Exception:
             print(Exception.message)
             return False

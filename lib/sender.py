@@ -49,7 +49,7 @@ class SenderThread(threading.Thread):
         return True
 
     @staticmethod
-    def get_gpios_json(gpios, deleted = False):
+    def get_gpios_json(gpios, deleted_gpios = []):
         """
         Return a string in Json format with port numbers and their status
         """
@@ -61,7 +61,18 @@ class SenderThread(threading.Thread):
                 'port': gpio.get_port(),
                 'inverted': 'true' if gpio.is_inverted() else 'false',
                 'status': gpio.get_status(),
-                'deleted': 'true' if deleted else 'false'
+                'deleted': 'false'
+            }
+            gpios_to_json.append(gpio_dict)
+
+        for gpio in deleted_gpios:
+            gpio_dict = {
+                'id': gpio.get_id(),
+                'name': gpio.get_name(),
+                'port': gpio.get_port(),
+                'inverted': 'true' if gpio.is_inverted() else 'false',
+                'status': gpio.get_status(),
+                'deleted': 'true'
             }
             gpios_to_json.append(gpio_dict)
         return json.dumps(gpios_to_json)

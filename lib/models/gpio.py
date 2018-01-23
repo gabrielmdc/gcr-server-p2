@@ -99,7 +99,7 @@ class Gpio(object):
         if status != Gpio.STATUS_OFF and status != Gpio.STATUS_ON:
             return
         if self.__inverted:
-            status = Gpio.STATUS_ON if status == Gpio.STATUS_OFF else Gpio.STATUS_ON
+            status = Gpio.STATUS_ON if status == Gpio.STATUS_OFF else Gpio.STATUS_OFF
         with open(self.file_name, "w") as f:
             f.write(status)
 
