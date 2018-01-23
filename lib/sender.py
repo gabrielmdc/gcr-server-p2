@@ -4,6 +4,8 @@ Sender module
 import threading
 import json
 
+import sys
+
 
 class SenderThread(threading.Thread):
     """
@@ -39,7 +41,7 @@ class SenderThread(threading.Thread):
         self.__connection = None
         self.__event.set()
         self.__event.clear()
-        print('Sender disconnected')
+        #print('Sender disconnected')
 
     @staticmethod
     def get_gpios_json(gpios):
@@ -68,11 +70,11 @@ class SenderThread(threading.Thread):
         :return: boolean
         """
         try:
-            print('sending message: ' + message)
+            #print('sending message: ' + message)
             self.__connection.sendall(message.encode())
             self.__event.wait()
         except Exception as e:
-            print(e)
+            sys.stderr.write(e)
             self.close_connection()
             return False
         return True

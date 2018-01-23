@@ -2,6 +2,7 @@
 Module Supervisor
 """
 import threading
+import sys
 from sender import SenderThread
 
 
@@ -39,17 +40,17 @@ class SupervisorThread(threading.Thread):
             try:
                 ports_to_send = SupervisorThread.get_changed_ports()
                 if len(ports_to_send) > 0:
-                    print('GPIOs changed detected')
+                    #print('GPIOs changed detected')
                     msg = SenderThread.get_gpios_json(ports_to_send)
-                    print('MSG to return: ' + msg)
+                    #print('MSG to return: ' + msg)
                     SenderThread.msg = msg
                     SupervisorThread.deleted_gpios = []
                     self.__event.set()
                     self.__event.clear()
             except Exception as e:
-                print(e)
+                sys.stderr.write(e)
                 break
-        print('Supervisor finished')
+        #print('Supervisor finished')
 
     def stop(self):
         """
