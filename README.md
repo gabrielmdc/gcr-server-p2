@@ -3,20 +3,26 @@
 # Gpio Control Relay service
 
 This program allows you to turn on/off a relay connected to a Raspberry Pi.
-To communicate with the service, it is necessary a client application like [Android app](https://github.com/nearlg/kodi-relay-remote)
+To communicate with the service, it is necessary a client application like 
+[Android app](https://github.com/nearlg/kodi-relay-remote)
 both connected under the same **local net**.
 
 Requirements
 ==============
 - Raspberry Pi or compatible
-- A Gnu/Linux system installed (Libreelec OS recomended, if you want to install it in a 
+- A Gnu/Linux system installed ([LibreElec OS](https://libreelec.tv/)
+ recommended, if you want to install this in a 
 different OS, please check the Gpio path in [the notes](###gpio-path))
 
-Installation
+Run
 ==============
 
-<!-- Just download the [ZIP](https://github.com/nearlg/script.service.relay/archive/master.zip) , and install it using Kodi add-on installer.
--->
+Just download the [ZIP](https://github.com/nearlg/script.service.relay/archive/master.zip), 
+and run _/service.py_:
+
+```bash
+python service.py
+```
 
 Configuration
 ==============
