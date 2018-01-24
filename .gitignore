@@ -1,7 +1,4 @@
-__pycache__
+**/__pycache__
 venv
-test
-test.py
 .idea
-*.pyc
-# ejemplo
+**/*.pyc
