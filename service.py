@@ -4,7 +4,7 @@ Main program
 import sys
 from main import Main
 
-SOCKET_PORT = 10001
+SOCKET_PORT = 10000
 DB_FILE = "resources/database.db"
 
 
