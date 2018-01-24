@@ -10,7 +10,7 @@ both connected under the same **local net**.
 Requirements
 ==============
 - Raspberry Pi or compatible
-- A Gnu/Linux system installed ([LibreElec OS](https://libreelec.tv/)
+- A Gnu/Linux system installed ([LibreELEC OS](https://libreelec.tv/)
  recommended, if you want to install this in a 
 different OS, please check the Gpio path in [the notes](###gpio-path))
 
