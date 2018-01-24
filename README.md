@@ -36,6 +36,6 @@ Used by the socket for the comunication with the app.</br>
 *By default: 10000*
 You can change it from _SOCKET_PORT_ in _/service.py_
 ### GPIO path
-It depends on the system, it has the OPENElec path by default.</br>
+It depends on the system, it has the LibreELEC path by default.</br>
 *By default: /sys/class/gpio*
 You can change it from _GPIO_DIRECTORY_NAME_ in _/lib/repository/gpio.py_
