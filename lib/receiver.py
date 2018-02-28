@@ -160,7 +160,7 @@ class ReceiverThread(threading.Thread):
             ReceiverThread.prepare_gpios([new_gpio])
             SupervisorThread.gpios.append(new_gpio)
         except Exception as e:
-            sys.stderr.write(e)
+            sys.stderr.write(e.message)
             return False
         return True
 
@@ -176,12 +176,12 @@ class ReceiverThread(threading.Thread):
         try:
             repositories = Repositories(self.__db_file)
             gpio_repo = repositories.get_gpio_repository()
-            gpio_repo.update_gpio(gpio.get_id(), name, port)
+            gpio_repo.update_gpio(gpio.get_id(), name, port, inverted)
             gpio.set_name(name)
             gpio.set_port(port)
             gpio.set_inverted(inverted)
         except Exception as e:
-            sys.stderr.write(e)
+            sys.stderr.write(e.message)
             return False
         return True
 
@@ -197,7 +197,7 @@ class ReceiverThread(threading.Thread):
             gpio_repo.delete_gpio_by_id(gpio.get_id())
             gpio.to_delete = True
         except Exception as e:
-            sys.stderr.write(e)
+            sys.stderr.write(e.message)
             return False
         return True
 

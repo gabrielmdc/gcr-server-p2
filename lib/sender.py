@@ -74,7 +74,7 @@ class SenderThread(threading.Thread):
             self.__connection.sendall(message.encode())
             self.__event.wait()
         except Exception as e:
-            sys.stderr.write(e)
+            sys.stderr.write(e.message)
             self.close_connection()
             return False
         return True

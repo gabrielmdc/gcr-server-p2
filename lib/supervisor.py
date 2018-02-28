@@ -48,7 +48,7 @@ class SupervisorThread(threading.Thread):
                     self.__event.set()
                     self.__event.clear()
             except Exception as e:
-                sys.stderr.write(e)
+                sys.stderr.write(e.message)
                 break
         #print('Supervisor finished')
 
