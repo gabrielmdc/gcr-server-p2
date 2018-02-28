@@ -37,7 +37,7 @@ class Main(object):
         and create the supervisor in case that is not already created
         :return: void
         """
-        conn, client_address = self.__socket.accept()
+        conn, client_address = self.__socket.accept()  # conn variable is a Socket
         connection = Connection(conn, (client_address[0], self.__socket_port), self.__event, self.__db_file)
         connection.start()
 
