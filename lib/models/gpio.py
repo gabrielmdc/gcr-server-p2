@@ -57,7 +57,6 @@ class Gpio(object):
             prev_status = self.__status
             self.__status = status_from_file
             self.__has_changed = True
-            #print('status has been changed')
 
     def set_name(self, name):
         """

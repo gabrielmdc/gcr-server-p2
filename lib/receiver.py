@@ -35,13 +35,10 @@ class ReceiverThread(threading.Thread):
             msg = msg.decode('utf')
             msg = msg.strip()
             action_data = ReceiverThread.get_action_data(msg)
-            #print('data received: ' + msg)
             if not action_data:
-                #print('...no action_data received...')
                 break
             action = action_data[0]
             data = action_data[1]
-            #print('ACTION: ' + action)
 
             if action == 'END' or not data:
                 break
@@ -134,7 +131,6 @@ class ReceiverThread(threading.Thread):
                 sys.stderr.write('On Gpio: ' + str(gpio.get_port()) + e)
 
     def _status_action(self, data):
-        #print('data[1]: ' + data[1])
         if data[1] == 'ON':
             status = Gpio.STATUS_ON
         elif data[1] == 'OFF':
@@ -145,7 +141,6 @@ class ReceiverThread(threading.Thread):
         gpios = ReceiverThread.get_gpios_from_data(data[0])
         # modify the status of all gpios
         for gpio in gpios:
-            #print('set status of gpio' + str(gpio.get_port()) + ' to ' + status)
             gpio.set_status(status)
         return True
 
@@ -204,4 +199,3 @@ class ReceiverThread(threading.Thread):
     def _end(self):
         self.__connection.close()
         self.__sender.close_connection()
-        #print('Receiver disconnected')

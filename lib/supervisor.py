@@ -40,9 +40,7 @@ class SupervisorThread(threading.Thread):
             try:
                 ports_to_send = SupervisorThread.get_changed_ports()
                 if len(ports_to_send) > 0:
-                    #print('GPIOs changed detected')
                     msg = SenderThread.get_gpios_json(ports_to_send)
-                    #print('MSG to return: ' + msg)
                     SenderThread.msg = msg
                     SupervisorThread.deleted_gpios = []
                     self.__event.set()
@@ -50,7 +48,6 @@ class SupervisorThread(threading.Thread):
             except Exception as e:
                 sys.stderr.write(e.message)
                 break
-        #print('Supervisor finished')
 
     def stop(self):
         """
