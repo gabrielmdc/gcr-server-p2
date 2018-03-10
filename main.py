@@ -63,9 +63,9 @@ class Main(object):
         for gpio in gpios:
             service_path = os.path.dirname(os.path.realpath(__file__))
             script_path = os.path.join(service_path, 'lib', 'gpio_setup.sh')
+            gpio_status = 'high' if gpio.is_inverted() else 'low'
             try:
-                gpiostatus = 'high' if gpio.is_inverted() else 'low'
-                os.system("sh " + script_path + " " + str(gpio.get_port()) + " " + gpiostatus)
+                os.system("sh " + script_path + " " + str(gpio.get_port()) + " " + gpio_status)
             except Exception as e:
                 sys.stderr.write('On GPIO: ' + str(gpio.get_port()) + " " + e)
 
