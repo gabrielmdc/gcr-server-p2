@@ -67,7 +67,7 @@ class Main(object):
             try:
                 os.system("sh " + script_path + " " + str(gpio.get_port()) + " " + gpio_status)
             except Exception as e:
-                sys.stderr.write('On GPIO: ' + str(gpio.get_port()) + " " + e)
+                sys.stderr.write('On GPIO: ' + str(gpio.get_port()) + " " + e.message)
 
     def __prepare_socket(self):
         """
