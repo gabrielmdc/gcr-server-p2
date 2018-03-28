@@ -1,4 +1,4 @@
-<img alt="Gpio Control Relay" title="Gpio Control Relay service" src="resources/images/icon.png" width="100" height="100">
+<img alt="Gpio Control Relay" title="Gpio Control Relay service" src="resources/images/icon.png">
 
 # Gpio Control Relay service
 This program allows you to turn on/off a relay connected to a Raspberry Pi by a gpio port.
@@ -47,7 +47,7 @@ You can change it from _GPIO_DIRECTORY_NAME_ in _/lib/repository/gpio.py_
 ### Connect the relays
 This is an example about how to connect a relay to a Raspberry Pi.
 
-<img alt="Relay connection schema" title="Relay connection schema" src="doc/relay-connection-schema.jpeg" width="100" height="100">
+<img alt="Relay connection schema" title="Relay connection schema" src="doc/relay-connection-schema.jpeg" width="300" height="300">
 
 In this example the relay is connected on port Gpio 7.
 Now, from the client application, it is necessary to configure (only once, the first time), a relay connected on port _7_.
