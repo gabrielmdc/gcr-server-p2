@@ -12,9 +12,12 @@ Protocol:
 import threading
 import os
 import sys
+
+from addaction import AddAction
+from deleteaction import DeleteAction
+from updateaction import UpdateAction
 from supervisor import SupervisorThread
 from models.gpio import Gpio
-from repository.repositories import Repositories
 
 
 class ReceiverThread(threading.Thread):
@@ -147,16 +150,11 @@ class ReceiverThread(threading.Thread):
     def _add_action(self, data):
         if len(data) < 3:
             return False
-        try:
-            repositories = Repositories(self.__db_file)
-            gpio_repo = repositories.get_gpio_repository()
-            new_gpio = gpio_repo.create_gpio(data[0], data[1], data[2] != '0')
-            new_gpio.set_status(Gpio.STATUS_OFF)
-            ReceiverThread.prepare_gpios([new_gpio])
-            SupervisorThread.gpios.append(new_gpio)
-        except Exception as e:
-            sys.stderr.write(e.message)
-            return False
+        name = data[0]
+        port = data[1]
+        inverted = data[2] != '0'
+        add_action = AddAction(self.__db_file, name, port, inverted)
+        add_action.run()
         return True
 
     def _edit_action(self, data):
@@ -166,34 +164,16 @@ class ReceiverThread(threading.Thread):
         name = data[1]
         port = data[2]
         inverted = data[3]
-        if not gpio:
-            return False
-        try:
-            repositories = Repositories(self.__db_file)
-            gpio_repo = repositories.get_gpio_repository()
-            gpio_repo.update_gpio(gpio.get_id(), name, port, inverted)
-            gpio.set_name(name)
-            gpio.set_port(port)
-            gpio.set_inverted(inverted)
-        except Exception as e:
-            sys.stderr.write(e.message)
-            return False
+        update_action = UpdateAction(self.__db_file, gpio, name, port, inverted)
+        update_action.run()
         return True
 
     def _delete_action(self, data):
         if len(data) < 1:
             return False
         gpio = ReceiverThread.get_gpio_by_id(data[0])
-        if not gpio:
-            return False
-        try:
-            repositories = Repositories(self.__db_file)
-            gpio_repo = repositories.get_gpio_repository()
-            gpio_repo.delete_gpio_by_id(gpio.get_id())
-            gpio.to_delete = True
-        except Exception as e:
-            sys.stderr.write(e.message)
-            return False
+        delete_action = DeleteAction(self.__db_file, gpio)
+        delete_action.run()
         return True
 
     def _end(self):
