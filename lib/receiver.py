@@ -136,7 +136,7 @@ class ReceiverThread(threading.Thread):
             try:
                 os.system("sh " + script_path + " " + str(gpio.get_port()))
             except Exception as e:
-                sys.stderr.write('On Gpio: ' + str(gpio.get_port()) + e)
+                sys.stderr.write('On Gpio: ' + str(gpio.get_port()) + e.message)
 
     def _status_action(self, data):
         if data[1] == 'ON':
