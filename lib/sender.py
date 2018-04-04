@@ -68,7 +68,7 @@ class SenderThread(threading.Thread):
         :return: boolean
         """
         try:
-            self.__sender_socket.sendall(message.encode())
+            self.__sender_socket.send(message.encode())
             self.__event.wait()
         except Exception as e:
             sys.stderr.write(e.message)
