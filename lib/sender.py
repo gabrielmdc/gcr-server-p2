@@ -13,22 +13,22 @@ class SenderThread(threading.Thread):
     """
     msg = ''
 
-    def __init__(self, event, connection, init_message):
+    def __init__(self, event, sender_socket, init_message):
         """
         Constructor
         :param event: Threading.Event
-        :param connection: Socket connection
+        :param sender_socket: Socket connection
         :param init_message: string: to be send for the first time in a connection
         """
         threading.Thread.__init__(self)
-        self.__connection = connection
+        self.__sender_socket = sender_socket
         self.__event = event
         self.__init_message = init_message
 
     def run(self):
-        if self.__connection and not self._send_message(self.__init_message):
+        if self.__sender_socket and not self._send_message(self.__init_message):
             return
-        while self.__connection:
+        while self.__sender_socket:
             if not self._send_message(SenderThread.msg):
                 break
 
@@ -37,8 +37,7 @@ class SenderThread(threading.Thread):
         Clean up the connection
         :return: void
         """
-        self.__connection.close()
-        self.__connection = None
+        self.__sender_socket.close()
         self.__event.set()
         self.__event.clear()
 
@@ -69,7 +68,7 @@ class SenderThread(threading.Thread):
         :return: boolean
         """
         try:
-            self.__connection.sendall(message.encode())
+            self.__sender_socket.send(message.encode())
             self.__event.wait()
         except Exception as e:
             sys.stderr.write(e.message)
