@@ -21,6 +21,7 @@ class ReceiverThread(threading.Thread):
     """
     ReceiverThread class
     """
+    CONN_TIMEOUT = 7200  # seconds, 7200s = 2h. This allows to finish this thread in case of the connection is broken
 
     def __init__(self, connection, db_file, sender):
         threading.Thread.__init__(self)
@@ -31,7 +32,14 @@ class ReceiverThread(threading.Thread):
     def run(self):
         while True:
             # Receive the data in small chunks and retransmit it
-            msg = self.__connection.recv(32)
+            self.__connection.settimeout(self.CONN_TIMEOUT)  # seconds, floats admitted
+            try:
+                msg = self.__connection.recv(32)
+            except Exception as e:  # in case of the connection timeout exception for example
+                sys.stderr.write(e.message)
+                break
+            if not msg:
+                break
             msg = msg.decode('utf')
             msg = msg.strip()
             action_data = ReceiverThread.get_action_data(msg)
