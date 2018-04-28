@@ -126,21 +126,6 @@ class ReceiverThread(threading.Thread):
             return action, data
         return None
 
-    @staticmethod
-    def prepare_gpios(gpios):
-        """
-        Prepare the gpio port to be used
-        :param gpios: Gpio[]
-        :return: void
-        """
-        for gpio in gpios:
-            service_path = os.path.dirname(os.path.realpath(__file__))
-            script_path = os.path.join(service_path, 'gpio_setup.sh')
-            try:
-                os.system("sh " + script_path + " " + str(gpio.get_port()))
-            except Exception as e:
-                sys.stderr.write('On Gpio: ' + str(gpio.get_port()) + e.message)
-
     def _status_action(self, data):
         if data[1] == 'ON':
             status = Gpio.STATUS_ON
