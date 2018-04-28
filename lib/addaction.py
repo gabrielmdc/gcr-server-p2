@@ -30,7 +30,6 @@ class AddAction(threading.Thread):
             repositories = Repositories(self.__db_file)
             gpio_repo = repositories.get_gpio_repository()
             new_gpio = gpio_repo.create_gpio(self.__name, self.__port, self.__inverted)
-            new_gpio.set_status(Gpio.STATUS_OFF)
             AddAction.prepare_gpios([new_gpio])
             SupervisorThread.gpios.append(new_gpio)
         except Exception as e:
@@ -46,7 +45,9 @@ class AddAction(threading.Thread):
         for gpio in gpios:
             service_path = os.path.dirname(os.path.realpath(__file__))
             script_path = os.path.join(service_path, 'gpio_setup.sh')
+            gpio_status = 'high' if gpio.is_inverted() else 'low'
+            script = "sh " + script_path + " " + str(gpio.get_port()) + " " + gpio_status
             try:
-                os.system("sh " + script_path + " " + str(gpio.get_port()))
+                os.system(script)
             except Exception as e:
                 sys.stderr.write('On Gpio: ' + str(gpio.get_port()) + e.message)

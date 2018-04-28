@@ -59,15 +59,18 @@ class Main(object):
     def prepare_gpios(gpios):
         """
         Prepare the gpio port to be used
+        :param gpios: Gpio[]
+        :return: void
         """
         for gpio in gpios:
             service_path = os.path.dirname(os.path.realpath(__file__))
             script_path = os.path.join(service_path, 'lib', 'gpio_setup.sh')
             gpio_status = 'high' if gpio.is_inverted() else 'low'
+            script = "sh " + script_path + " " + str(gpio.get_port()) + " " + gpio_status
             try:
-                os.system("sh " + script_path + " " + str(gpio.get_port()) + " " + gpio_status)
+                os.system(script)
             except Exception as e:
-                sys.stderr.write('On GPIO: ' + str(gpio.get_port()) + " " + e.message)
+                sys.stderr.write('On Gpio: ' + str(gpio.get_port()) + e.message)
 
     def __prepare_socket(self):
         """
