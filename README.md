@@ -47,7 +47,7 @@ You can change it from _GPIO_DIRECTORY_NAME_ in _/lib/repository/gpio.py_
 ### Connect the relays
 This is an example about how to connect a relay to a Raspberry Pi.
 
-<img alt="Relay connection schema" title="Relay connection schema" src="doc/relay-connection-schema.jpeg" width="450" height="300">
+<img alt="Relay connection schema" title="Relay connection schema" src="docs/relay-connection-schema.jpeg" width="450" height="300">
 
 In this example the relay is connected on port Gpio 7.
 Now, from the client application, it is necessary to configure (only once, the first time), a relay connected on port _7_.
