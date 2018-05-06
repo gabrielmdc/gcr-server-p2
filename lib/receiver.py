@@ -10,7 +10,6 @@ Protocol:
 ------------------
 """
 import threading
-import os
 import sys
 
 from addaction import AddAction
@@ -156,7 +155,7 @@ class ReceiverThread(threading.Thread):
         gpio = ReceiverThread.get_gpio_by_id(data[0])
         name = data[1]
         port = data[2]
-        inverted = data[3]
+        inverted = data[3] != '0'
         update_action = UpdateAction(self.__db_file, gpio, name, port, inverted)
         update_action.run()
         return True
