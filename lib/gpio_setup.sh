@@ -7,5 +7,6 @@ GPIOSTATE=$2
 
 if [ ! -d "/sys/class/gpio/gpio$GPIOPORT" ]; then
     echo $GPIOPORT > /sys/class/gpio/export
-    echo $GPIOSTATE > /sys/class/gpio/gpio$GPIOPORT/direction
+    echo out > /sys/class/gpio/gpio$GPIOPORT/direction
+    echo "$GPIOSTATE" > /sys/class/gpio/gpio$GPIOPORT/value
 fi
