@@ -45,7 +45,7 @@ class AddAction(threading.Thread):
         for gpio in gpios:
             service_path = os.path.dirname(os.path.realpath(__file__))
             script_path = os.path.join(service_path, 'gpio_setup.sh')
-            gpio_status = 'high' if gpio.is_inverted() else 'low'
+            gpio_status = '1' if gpio.is_inverted() else '0'
             script = "sh " + script_path + " " + str(gpio.get_port()) + " " + gpio_status
             try:
                 os.system(script)
